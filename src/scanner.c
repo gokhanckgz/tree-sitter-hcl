@@ -131,13 +131,14 @@ static unsigned serialize(Scanner *scanner, char *buf) {
     size += sizeof(uint32_t);
     for (int i = 0; i < scanner->context_stack.len; i++) {
         Context *context = &scanner->context_stack.data[i];
-        if (size + 2 + context->heredoc_identifier.len >= TREE_SITTER_SERIALIZATION_BUFFER_SIZE) {
+        if (size + 1 + sizeof(uint32_t) + context->heredoc_identifier.len >= TREE_SITTER_SERIALIZATION_BUFFER_SIZE) {
             return 0;
         }
         if (context->heredoc_identifier.len > CHAR_MAX) {
             return 0;
         }
-        buf[size++] = context->type;
+        memcpy(&buf[size], &(context->type), 1);
+        size += 1;
         memcpy(&buf[size], &(context->heredoc_identifier.len), sizeof(uint32_t));
         size += sizeof(uint32_t);
         memcpy(&buf[size], context->heredoc_identifier.data, context->heredoc_identifier.len);
